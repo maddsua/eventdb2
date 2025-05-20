@@ -23,6 +23,8 @@ So, the basic requirements that we get in the end here are:
 4. http service uptime checks
 5. Event notifications
 6. Simple metrics recording
-7. GraphQL API
+7. User GraphQL API
+8. Public data ingest REST API
+9. TypeScript client library
 
 Doesn't look like Grafana killa, does it? Well because it isn't! It would be much more close to the analitics inside of DigitalOcean's dashboard.
