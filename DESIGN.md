@@ -101,7 +101,7 @@ With this one it's dead simple - it's literally just a plain JSON object of the 
 {
   "key": "value",
   // ...
-  "client_ip: "127.0.0.1",
+  "client_ip": "127.0.0.1",
 }
 ```
 
