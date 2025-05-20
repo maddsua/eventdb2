@@ -29,7 +29,7 @@ So, the basic requirements that we get in the end here are:
 
 Doesn't look like Grafana killa, does it? Well because it isn't! It would be much more close to the analitics inside of DigitalOcean's dashboard.
 
-## Overall composition
+## Main draft
 
 ### Microservices?
 
@@ -106,3 +106,19 @@ With this one it's dead simple - it's literally just a plain JSON object of the 
 ```
 
 There aren't any technical limitations here, expect for both keys and values having to be strings. Key size should be restricted to around 100 symbols though to avoid having absurdly long keys that would break the UI. Values could be much longer but it still makes sense to limit them to let's say a 1000 characters (not bytes, unlike the labels). These limits can be freely adjusted at a later stage.
+
+
+### http uptime checks
+
+Pretty much just joink it from <https://github.com/maddsua/pulse> but instead of having a config file just pull the options from the database. To avoid excessive writes the minimal poll interval should be set to a sensible. 15 seconds should be sufficient. 10 probes writing data each 15 seconds would generate (24 * 60 * 4) * 28 = 161,280 entries monthly which is well inside the SQlite cpabilities.
+
+On the UI side of things, I want to display a simple response time and http code graphs, average uptime percentage (which was an absolute pain in the ass to achieve with Grafana btw) and probably some other calculated values.
+
+
+### Event notifications
+
+Singe everything is sitting in the same process anyway it is trivial to monitor data changes and dispatch notifications when certain conditions are met. This feature can be pretty much just copied directly from v1 minus maybe adding message templates or something similar.
+
+---
+
+... to be continued
