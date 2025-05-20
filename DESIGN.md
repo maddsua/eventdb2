@@ -26,6 +26,7 @@ So, the basic requirements that we get in the end here are:
 7. User GraphQL API
 8. Public data ingest REST API
 9. TypeScript client library
+10. Single tenant + multiuser
 
 Doesn't look like Grafana killa, does it? Well because it isn't! It would be much more close to the analitics inside of DigitalOcean's dashboard.
 
@@ -119,6 +120,22 @@ On the UI side of things, I want to display a simple response time and http code
 
 Singe everything is sitting in the same process anyway it is trivial to monitor data changes and dispatch notifications when certain conditions are met. This feature can be pretty much just copied directly from v1 minus maybe adding message templates or something similar.
 
----
 
-... to be continued
+### Dashboard API
+
+Using REST for it the previous time was a huge mistake. It took too much time and effort to write it. Using GraphQL would make this task much easier since it will generate all the boilerplace code for you. Oh, and not just on the server but also no the client!
+
+
+### Ingest REST API
+
+However, when it comes to the ingest API there's no reason to overcomplicate things. We won't have many endpoints here and the ones that we'll do would be pretty simple.
+
+
+### TypeScript client library
+
+To make it simpler to connect an already existing app to eventdb using a client library is preferred. The interfaces similar to <https://github.com/maddsua/logpush> can be used to connect a `console.log`-like class to the REST API of the backend.
+
+
+### Single tenant + multiuser
+
+Simply put: I want to have a way to add readonly or otherwise limited users to the dashboard but at the same time I am not building it to scale to the billions, so if you want to use it for, let's say, different customers - just deploy multiple services instead. I can't be bothered with writing the overly comples system to handle different resoucres access and sharing.
