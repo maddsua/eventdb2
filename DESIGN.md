@@ -69,3 +69,24 @@ This SQL table could be used as a reference:
 |  serial  |    unix epoch   |       uuid      |  raw message  | binary array |    json map    |
 ------------------------------------------------------------------------------------------------
 ```
+
+Here, `binary array` indicates a binary data structure that is used instead of JSON in order to improve parsing speed. It contains of one or more messages written to the data stream sequentially.
+```
+---> stream
+---------------------------------------------
+|      message     |      message      |   ...
+---------------------------------------------
+```
+
+Messages consist of two integers indicating content size followed by the raw contents.
+```
+---------------------------------------------------------------------
+|                                message                            |
+---------------------------------------------------------------------
+|  key_size  |  data_size  |      key raw      |      data raw      |
+---------------------------------------------------------------------
+|  uint8_le  |  uint16_le  |       bytes       |        bytes       |
+---------------------------------------------------------------------
+```
+
+So we do waste entire 3 bytes on data size indication, which is nothing comparing to the overheard of having JSON or url encoding, which looks justifiable to me. Oh an also, this WILL handle all the weird cases of unicode and whatnot (YES I AM LOOKING AT YOU LOKI)
