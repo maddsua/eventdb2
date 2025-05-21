@@ -39,6 +39,10 @@ func New(basedir string) (*sqlite, error) {
 		return nil, fmt.Errorf("unable to open sqlite storage: %v", err)
 	}
 
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("sqlite storage unreachable: %v", err)
+	}
+
 	return &sqlite{db: db}, nil
 }
 
