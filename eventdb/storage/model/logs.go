@@ -23,11 +23,6 @@ type LogOperator interface {
 	SetLogStreamNetWhitelist(ctx context.Context, id uuid.UUID, netlist []net.IPNet) (*LogStream, error)
 }
 
-type IndexPagination struct {
-	Limit  null.Int
-	Offser null.Int
-}
-
 type LogEntry struct {
 	ID       int64
 	StreamID uuid.UUID
@@ -46,11 +41,6 @@ const (
 	LogLevelLog   = "log"
 	LogLevelDebug = "debug"
 )
-
-type TimePagination struct {
-	Before null.Time
-	After  null.Time
-}
 
 type LogFilter struct {
 	LogLevel sql.Null[LogLevel]
