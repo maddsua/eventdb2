@@ -92,7 +92,7 @@ Messages consist of two integers indicating content size followed by the raw con
 
 So we do waste entire 3 bytes on data size indication, which is nothing comparing to the overheard of having JSON or url encoding, which looks justifiable to me. Oh an also, this WILL handle all the weird cases of unicode and whatnot (YES I AM LOOKING AT YOU LOKI)
 
-Even tho the used int sizes would limit label key and label content sizes to 256 and 65536 bytes respecively, at actual maximal allowed size should be limited to 200 bytes for the key and a 1000 bytes for the value. There's no need to allow anyone to just dump huge amounts of data here. Labels should only be used for filtering, for everythyng else there's the metadata field.
+Even tho the used int sizes would limit label key and label content sizes to 256 and 65536 bytes respecively, at actual maximal allowed size should be limited to 200 bytes for the key and a 1000 utf-8 characters for the value. There's no need to allow anyone to just dump huge amounts of data here. Labels should only be used for filtering, for everythyng else there's the metadata field.
 
 Some basic metadata filters would be:
 
@@ -100,20 +100,6 @@ Some basic metadata filters would be:
 - `neq`: string not equal
 - `sub`: string contains a subscring
 - `nsub`: string not contains a subscring
-
-### Structued log metadata
-
-With this one it's dead simple - it's literally just a plain JSON object of the following format:
-```jsonc
-{
-  "key": "value",
-  // ...
-  "client_ip": "127.0.0.1",
-}
-```
-
-There aren't any technical limitations here, expect for both keys and values having to be strings. Key size should be restricted to around 100 symbols though to avoid having absurdly long keys that would break the UI. Values could be much longer but it still makes sense to limit them to let's say a 1000 characters (not bytes, unlike the labels). These limits can be freely adjusted at a later stage.
-
 
 ### http uptime checks
 
