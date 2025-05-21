@@ -1,0 +1,82 @@
+package model
+
+import (
+	"context"
+	"database/sql"
+	"net"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/guregu/null"
+)
+
+type LogOperator interface {
+	InsertLogEntry(ctx context.Context, entry LogEntry) (*LogEntry, error)
+	QueryLogs(ctx context.Context, filter LogFilter, page TimePagination) ([]LogEntry, error)
+
+	InsertLogStream(ctx context.Context, stream LogStream) (*LogStream, error)
+	GetLogStream(ctx context.Context, id uuid.UUID) (*LogStream, error)
+	QueryLogStreams(ctx context.Context, fitler LogStreamFilters, page IndexPagination) ([]LogStream, error)
+	ClearLogStreamEntries(ctx context.Context, id uuid.UUID, from time.Time, to time.Time) (int, error)
+	SetLogStreamName(ctx context.Context, id uuid.UUID, name string) (*LogStream, error)
+	SetLogStreamToken(ctx context.Context, id uuid.UUID, token null.String) (*LogStream, error)
+	SetLogStreamNetWhitelist(ctx context.Context, id uuid.UUID, netlist []net.IPNet) (*LogStream, error)
+}
+
+type IndexPagination struct {
+	Limit  null.Int
+	Offser null.Int
+}
+
+type LogEntry struct {
+	ID       int64
+	StreamID uuid.UUID
+	Date     time.Time
+	Level    LogLevel
+	Message  string
+	Meta     map[string]string
+}
+
+type LogLevel string
+
+const (
+	LogLevelError = "error"
+	LogLevelWarn  = "warn"
+	LogLevelInfo  = "info"
+	LogLevelLog   = "log"
+	LogLevelDebug = "debug"
+)
+
+type TimePagination struct {
+	Before null.Time
+	After  null.Time
+}
+
+type LogFilter struct {
+	LogLevel sql.Null[LogLevel]
+	StreamID uuid.NullUUID
+	Labels   []LogLabelFilter
+}
+
+type LogLabelFilter struct {
+	Key         string
+	Equal       null.String
+	NotEqual    null.String
+	Contains    null.String
+	NotContains null.String
+	IsEmpty     null.String
+}
+
+type LogStream struct {
+	ID           uuid.UUID
+	Created      time.Time
+	Updated      time.Time
+	Name         string
+	Token        null.String
+	NetWhitelist []net.IPAddr
+}
+
+type LogStreamFilters struct {
+	ID           uuid.NullUUID
+	NameContains null.String
+}
