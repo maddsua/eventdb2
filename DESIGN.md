@@ -54,24 +54,24 @@ Otherwise, SQLite is more than capable to provide the needed base storage for th
 I should probably make a storage interface so that it would be possible to use an external DB like timescale in the future, but that's not something I see doing in the forseable future.
 
 
-### Log labeling or filters
+### Log labeling and filters
 
-Only the basic data such as the timestamp and stream id would be written as separate SQL columns, while labels and tags should be stored as serialized filers.
+Only the basic data such as the timestamp and stream id would be written as separate SQL columns, while any other metadata such as labels is stored in a serialized `metatada` column.
 
-Even though that would increase the data transfer between the DB and the dashboard backend - this should be sufficient enough considering the requirements.
+This would have a negative performance impact due to increased number of calculations required to apply filters. To coutneract that a bit, instead of storing metadata as json a custom binary format is used.
 
 This SQL table could be used as a reference:
 ```sql
---------------------------------------------------------------------------------------------------------------
-|    id    |    timestamp    |    stream_id    |    level    |    message    |    labels    |    metadata    |
---------------------------------------------------------------------------------------------------------------
-|  integer |     integer     |       blob      |    text     |      text     |     blob     |      blob      |
---------------------------------------------------------------------------------------------------------------
-|  serial  |    unix epoch   |       uuid      | err/log/etc |  raw message  | binary array |    json map    |
---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+|    id    |    timestamp    |    stream_id    |    level    |    message    |   metadata   |
+---------------------------------------------------------------------------------------------
+|  integer |     integer     |       blob      |    text     |      text     |     blob     |
+---------------------------------------------------------------------------------------------
+|  serial  |    unix epoch   |       uuid      | err/log/etc |  raw message  | binary array |
+---------------------------------------------------------------------------------------------
 ```
 
-Here, `binary array` indicates a binary data structure that is used instead of JSON in order to improve parsing speed. It contains of one or more messages written to the data stream sequentially.
+Here, `binary array` consists of one or more messages written to the data stream sequentially.
 ```
 ---> stream
 ---------------------------------------------
@@ -94,6 +94,12 @@ So we do waste entire 3 bytes on data size indication, which is nothing comparin
 
 Even tho the used int sizes would limit label key and label content sizes to 256 and 65536 bytes respecively, at actual maximal allowed size should be limited to 200 bytes for the key and a 1000 bytes for the value. There's no need to allow anyone to just dump huge amounts of data here. Labels should only be used for filtering, for everythyng else there's the metadata field.
 
+Some basic metadata filters would be:
+
+- `eq`: string is equal
+- `neq`: string not equal
+- `sub`: string contains a subscring
+- `nsub`: string not contains a subscring
 
 ### Structued log metadata
 
