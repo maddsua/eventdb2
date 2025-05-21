@@ -62,13 +62,13 @@ Even though that would increase the data transfer between the DB and the dashboa
 
 This SQL table could be used as a reference:
 ```sql
-------------------------------------------------------------------------------------------------
-|    id    |    timestamp    |    stream_id    |    message    |    labels    |    metadata    |
-------------------------------------------------------------------------------------------------
-|  integer |     integer     |       blob      |      text     |     blob     |      blob      |
-------------------------------------------------------------------------------------------------
-|  serial  |    unix epoch   |       uuid      |  raw message  | binary array |    json map    |
-------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+|    id    |    timestamp    |    stream_id    |    level    |    message    |    labels    |    metadata    |
+--------------------------------------------------------------------------------------------------------------
+|  integer |     integer     |       blob      |    text     |      text     |     blob     |      blob      |
+--------------------------------------------------------------------------------------------------------------
+|  serial  |    unix epoch   |       uuid      | err/log/etc |  raw message  | binary array |    json map    |
+--------------------------------------------------------------------------------------------------------------
 ```
 
 Here, `binary array` indicates a binary data structure that is used instead of JSON in order to improve parsing speed. It contains of one or more messages written to the data stream sequentially.
