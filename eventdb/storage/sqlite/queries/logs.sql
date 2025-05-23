@@ -4,12 +4,14 @@ insert into log_streams (
 	updated_at,
 	name,
 	token,
+	platform,
 	net_whitelist
 ) values (
 	sqlc.arg(created_at),
 	sqlc.arg(updated_at),
 	sqlc.arg(name),
 	sqlc.arg(token),
+	sqlc.arg(platform),
 	sqlc.arg(net_whitelist)
 ) returning id;
 

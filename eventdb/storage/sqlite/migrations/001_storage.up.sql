@@ -6,6 +6,7 @@ create table log_streams (
 	updated_at integer not null,
 	name text not null unique,
 	token blob,
+	platform text null,
 	net_whitelist blob
 );
 

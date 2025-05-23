@@ -53,13 +53,15 @@ insert into log_streams (
 	updated_at,
 	name,
 	token,
+	platform,
 	net_whitelist
 ) values (
 	?1,
 	?2,
 	?3,
 	?4,
-	?5
+	?5,
+	?6
 ) returning id
 `
 
@@ -68,6 +70,7 @@ type InsertLogStreamParams struct {
 	UpdatedAt    int64
 	Name         string
 	Token        types.NullBlob
+	Platform     interface{}
 	NetWhitelist types.NullBlob
 }
 
@@ -77,6 +80,7 @@ func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams
 		arg.UpdatedAt,
 		arg.Name,
 		arg.Token,
+		arg.Platform,
 		arg.NetWhitelist,
 	)
 	var id types.Blob

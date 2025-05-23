@@ -23,5 +23,6 @@ type LogStream struct {
 	UpdatedAt    int64
 	Name         string
 	Token        types.NullBlob
+	Platform     interface{}
 	NetWhitelist types.NullBlob
 }

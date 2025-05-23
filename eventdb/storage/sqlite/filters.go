@@ -13,25 +13,25 @@ func Matchlabels(labels model.StringMap, filters *model.LogLabelFilter) bool {
 	}
 
 	val, has := labels[filters.Key]
-	if filters.IsEmpty != nil {
-		if ((*filters.IsEmpty) && has) || !has {
+	if filters.IsEmpty.Valid {
+		if (filters.IsEmpty.Bool && has) || !has {
 			return false
 		}
 	}
 
-	if filters.Equal != nil && !strings.EqualFold(*filters.Equal, val) {
+	if filters.Equal.Valid && !strings.EqualFold(filters.Equal.String, val) {
 		return false
 	}
 
-	if filters.NotEqual != nil && strings.EqualFold(*filters.NotEqual, val) {
+	if filters.NotEqual.Valid && strings.EqualFold(filters.NotEqual.String, val) {
 		return false
 	}
 
-	if filters.Contains != nil && !strings.Contains(strings.ToLower(val), strings.ToLower(*filters.Contains)) {
+	if filters.Contains.Valid && !strings.Contains(strings.ToLower(val), strings.ToLower(filters.Contains.String)) {
 		return false
 	}
 
-	if filters.NotContains != nil && strings.Contains(strings.ToLower(val), strings.ToLower(*filters.NotContains)) {
+	if filters.NotContains.Valid && strings.Contains(strings.ToLower(val), strings.ToLower(filters.NotContains.String)) {
 		return false
 	}
 
