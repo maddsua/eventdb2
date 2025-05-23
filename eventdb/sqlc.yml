@@ -10,5 +10,10 @@ sql:
         overrides:
           - db_type: "blob"
             go_type:
-              import: "database/sql"
-              type: "RawBytes"
+              import: "github.com/maddsua/eventdb2/storage/sqlite/types"
+              type: "Blob"
+          - db_type: "blob"
+            nullable: true
+            go_type:
+              import: "github.com/maddsua/eventdb2/storage/sqlite/types"
+              type: "NullBlob"

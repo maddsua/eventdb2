@@ -1,19 +1,58 @@
-package encoders
+package types
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 	"math"
+	"time"
+
+	"github.com/google/uuid"
 )
 
-type Metadata map[string]string
+type Blob sql.RawBytes
+type NullBlob sql.Null[Blob]
 
-func (this Metadata) MarshalBinary() ([]byte, error) {
+func NullBlobSlice(val []byte) NullBlob {
+	if len(val) == 0 {
+		return NullBlob{}
+	}
+	return NullBlob{V: val, Valid: true}
+}
 
-	if this == nil {
+func NullInt(val int64) sql.NullInt64 {
+	return sql.NullInt64{Int64: val, Valid: true}
+}
+
+func NullIntPtr(val *int64) sql.NullInt64 {
+	if val == nil {
+		return sql.NullInt64{}
+	}
+	return sql.NullInt64{Int64: *val, Valid: true}
+}
+
+func NullTimePtr(val *time.Time) sql.NullInt64 {
+	if val == nil {
+		return sql.NullInt64{}
+	}
+	return sql.NullInt64{Int64: val.UnixNano(), Valid: true}
+}
+
+func NullUUID(val uuid.NullUUID) NullBlob {
+	if !val.Valid {
+		return NullBlob{}
+	}
+	return NullBlob{V: val.UUID[:], Valid: true}
+}
+
+type StringMap map[string]string
+
+func EncodeStringMap(val StringMap) ([]byte, error) {
+
+	if val == nil {
 		return nil, nil
 	}
 
@@ -38,7 +77,7 @@ func (this Metadata) MarshalBinary() ([]byte, error) {
 
 	var buff bytes.Buffer
 
-	for key, val := range this {
+	for key, val := range val {
 
 		keyData := packString(key, math.MaxUint8)
 		valData := packString(val, math.MaxUint16)
@@ -65,15 +104,13 @@ func (this Metadata) MarshalBinary() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func (this *Metadata) UnmarshalBinary(data []byte) error {
+func DecodeStringMap(data []byte) (StringMap, error) {
 
 	if len(data) == 0 {
-		return nil
-	} else if this == nil {
-		return errors.New("nil target value")
-	} else if *this == nil {
-		*this = make(Metadata)
+		return nil, nil
 	}
+
+	val := StringMap{}
 
 	reader := bytes.NewReader(data)
 
@@ -86,26 +123,26 @@ func (this *Metadata) UnmarshalBinary(data []byte) error {
 
 		valSizeBuff := make([]byte, 2)
 		if _, err := io.ReadFull(reader, valSizeBuff); err != nil {
-			return fmt.Errorf("unable to read value size: %v", err)
+			return val, fmt.Errorf("unable to read value size: %v", err)
 		}
 
 		keyBuff := make([]byte, int(keySizeByte))
 		if _, err := io.ReadFull(reader, keyBuff); err != nil {
-			return fmt.Errorf("unable to read key: %v", err)
+			return val, fmt.Errorf("unable to read key: %v", err)
 		}
 
 		valSize := int(binary.LittleEndian.Uint16(valSizeBuff))
 		if valSize > math.MaxUint16 {
-			return errors.New("invalid field value size")
+			return val, errors.New("invalid field value size")
 		}
 
 		valBuff := make([]byte, valSize)
 		if _, err := io.ReadFull(reader, valBuff); err != nil {
-			return fmt.Errorf("unable to read value: %v", err)
+			return val, fmt.Errorf("unable to read value: %v", err)
 		}
 
-		(*this)[string(keyBuff)] = string(valBuff)
+		val[string(keyBuff)] = string(valBuff)
 	}
 
-	return nil
+	return val, nil
 }

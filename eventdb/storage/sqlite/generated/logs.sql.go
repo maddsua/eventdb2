@@ -7,8 +7,9 @@ package generated
 
 import (
 	"context"
-
 	"database/sql"
+
+	"github.com/maddsua/eventdb2/storage/sqlite/types"
 )
 
 const insertLogEntry = `-- name: InsertLogEntry :exec
@@ -28,11 +29,11 @@ insert into log_entries (
 `
 
 type InsertLogEntryParams struct {
-	StreamID sql.RawBytes
+	StreamID types.Blob
 	Date     int64
 	Level    string
 	Message  string
-	Meta     []byte
+	Meta     types.NullBlob
 }
 
 func (q *Queries) InsertLogEntry(ctx context.Context, arg InsertLogEntryParams) error {
@@ -66,11 +67,11 @@ type InsertLogStreamParams struct {
 	CreatedAt    int64
 	UpdatedAt    int64
 	Name         string
-	Token        []byte
-	NetWhitelist []byte
+	Token        types.NullBlob
+	NetWhitelist types.NullBlob
 }
 
-func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams) (sql.RawBytes, error) {
+func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams) (types.Blob, error) {
 	row := q.db.QueryRowContext(ctx, insertLogStream,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -78,26 +79,27 @@ func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams
 		arg.Token,
 		arg.NetWhitelist,
 	)
-	var id sql.RawBytes
+	var id types.Blob
 	err := row.Scan(&id)
 	return id, err
 }
 
 const queryLogs = `-- name: QueryLogs :many
 select id, stream_id, date, level, message, meta from log_entries
-where (?3 is null or stream_id = ?3)
+where (stream_id = ?1 or ?1 is null)
+	and (date >= ?2 or ?2 is null)
+	and (date <= ?3 or ?3 is null)
 order by date
-limit ? offset ?
 `
 
 type QueryLogsParams struct {
-	StreamID interface{}
-	Limit    int64
-	Offset   int64
+	StreamID types.NullBlob
+	From     sql.NullInt64
+	To       sql.NullInt64
 }
 
 func (q *Queries) QueryLogs(ctx context.Context, arg QueryLogsParams) ([]LogEntry, error) {
-	rows, err := q.db.QueryContext(ctx, queryLogs, arg.StreamID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, queryLogs, arg.StreamID, arg.From, arg.To)
 	if err != nil {
 		return nil, err
 	}

@@ -50,12 +50,12 @@ type LogFilter struct {
 
 type LogLabelFilter struct {
 	Key         string
-	Regex       null.String
-	Equal       null.String
-	NotEqual    null.String
-	Contains    null.String
-	NotContains null.String
-	IsEmpty     null.String
+	Regex       *string
+	Equal       *string
+	NotEqual    *string
+	Contains    *string
+	NotContains *string
+	IsEmpty     *string
 }
 
 type LogStream struct {
@@ -63,11 +63,11 @@ type LogStream struct {
 	Created      time.Time
 	Updated      time.Time
 	Name         string
-	Token        null.String
+	Token        *string
 	NetWhitelist []net.IPAddr
 }
 
 type LogStreamFilters struct {
 	ID           uuid.NullUUID
-	NameContains null.String
+	NameContains *string
 }

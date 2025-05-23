@@ -1,28 +1,28 @@
-package encoders_test
+package types_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/maddsua/eventdb2/storage/sqlite/encoders"
+	"github.com/maddsua/eventdb2/storage/sqlite/types"
 )
 
 func TestLabels(t *testing.T) {
 
-	labels := encoders.Metadata{
+	labels := types.StringMap{
 		"user_id": "12345",
 		"sus":     "true",
 		"0":       "1",
 		"________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________": "false",
 	}
 
-	data, err := labels.MarshalBinary()
+	data, err := types.EncodeStringMap(labels)
 	if err != nil {
 		t.Fatalf("encoding failed: %v", err)
 	}
 
-	var decoded encoders.Metadata
-	if err := decoded.UnmarshalBinary(data); err != nil {
+	decoded, err := types.DecodeStringMap(data)
+	if err != nil {
 		t.Fatalf("decoding failed: %v", err)
 	}
 

@@ -5,23 +5,23 @@
 package generated
 
 import (
-	"database/sql"
+	"github.com/maddsua/eventdb2/storage/sqlite/types"
 )
 
 type LogEntry struct {
 	ID       int64
-	StreamID sql.RawBytes
+	StreamID types.Blob
 	Date     int64
 	Level    string
 	Message  string
-	Meta     []byte
+	Meta     types.NullBlob
 }
 
 type LogStream struct {
-	ID           sql.RawBytes
+	ID           types.Blob
 	CreatedAt    int64
 	UpdatedAt    int64
 	Name         string
-	Token        []byte
-	NetWhitelist []byte
+	Token        types.NullBlob
+	NetWhitelist types.NullBlob
 }

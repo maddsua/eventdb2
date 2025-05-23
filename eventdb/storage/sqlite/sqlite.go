@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/maddsua/eventdb2/storage/model"
-	"github.com/maddsua/eventdb2/storage/sqlite/encoders"
 	"github.com/maddsua/eventdb2/storage/sqlite/generated"
+	"github.com/maddsua/eventdb2/storage/sqlite/types"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -84,9 +84,9 @@ func (this *sqlite) InsertLogBatch(ctx context.Context, entries []model.LogEntry
 
 	var insert = func(entry model.LogEntry) error {
 
-		metaBuffer, err := encoders.Metadata(entry.Meta).MarshalBinary()
+		metaBuffer, err := types.EncodeStringMap(entry.Meta)
 		if err != nil {
-			return fmt.Errorf("encoders.Metadata.MarshalBinary: %v", err)
+			return fmt.Errorf("Metadata.MarshalBinary: %v", err)
 		}
 
 		if err := dbq.InsertLogEntry(ctx, generated.InsertLogEntryParams{
@@ -94,7 +94,7 @@ func (this *sqlite) InsertLogBatch(ctx context.Context, entries []model.LogEntry
 			Date:     entry.Date.UnixNano(),
 			Level:    string(entry.Level),
 			Message:  entry.Message,
-			Meta:     metaBuffer,
+			Meta:     types.NullBlobSlice(metaBuffer),
 		}); err != nil {
 			return fmt.Errorf("sqlc.InsertLogEntry: %v", err)
 		}
@@ -113,4 +113,24 @@ func (this *sqlite) InsertLogBatch(ctx context.Context, entries []model.LogEntry
 	}
 
 	return nil
+}
+
+func (this *sqlite) QueryLogs(ctx context.Context, filter model.LogFilter, page model.TimePagination) ([]model.LogEntry, error) {
+
+	entries, err := generated.New(this.db).QueryLogs(ctx, generated.QueryLogsParams{
+		StreamID: types.NullUUID(filter.StreamID),
+		From:     types.NullTimePtr(page.FromDate),
+		To:       types.NullTimePtr(page.UntilDate),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("sqlc.QueryLogs: %v", err)
+	}
+
+	var result []model.LogEntry
+	for _, entry := range entries {
+		//	todo: do filtering and return
+	}
+
+	return result, nil
 }

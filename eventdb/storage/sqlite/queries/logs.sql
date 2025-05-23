@@ -30,6 +30,7 @@ insert into log_entries (
 
 -- name: QueryLogs :many
 select * from log_entries
-where (sqlc.narg(stream_id) is null or stream_id = sqlc.narg(stream_id))
-order by date
-limit ? offset ?;
+where (stream_id = sqlc.narg(stream_id) or sqlc.narg(stream_id) is null)
+	and (date >= sqlc.narg(from) or sqlc.narg(from) is null)
+	and (date <= sqlc.narg(to) or sqlc.narg(to) is null)
+order by date;

@@ -1,6 +1,8 @@
 package model
 
-import "github.com/guregu/null"
+import (
+	"time"
+)
 
 type Storage interface {
 	ID() string
@@ -12,11 +14,11 @@ type Storage interface {
 }
 
 type TimePagination struct {
-	Before null.Time
-	After  null.Time
+	FromDate  *time.Time
+	UntilDate *time.Time
 }
 
 type IndexPagination struct {
-	Limit  null.Int
-	Offser null.Int
+	Limit  *int
+	Offser *int
 }
