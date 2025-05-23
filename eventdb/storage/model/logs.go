@@ -50,6 +50,7 @@ type LogFilter struct {
 
 type LogLabelFilter struct {
 	Key         string
+	Regex       null.String
 	Equal       null.String
 	NotEqual    null.String
 	Contains    null.String
