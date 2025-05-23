@@ -11,7 +11,7 @@ import (
 )
 
 type LogOperator interface {
-	InsertLogEntry(ctx context.Context, entry LogEntry) (*LogEntry, error)
+	InsertLogBatch(ctx context.Context, entries []LogEntry) error
 	QueryLogs(ctx context.Context, filter LogFilter, page TimePagination) ([]LogEntry, error)
 
 	InsertLogStream(ctx context.Context, stream LogStream) (*LogStream, error)

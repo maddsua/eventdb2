@@ -7,6 +7,8 @@ package generated
 
 import (
 	"context"
+
+	"database/sql"
 )
 
 const insertLogEntry = `-- name: InsertLogEntry :exec
@@ -26,7 +28,7 @@ insert into log_entries (
 `
 
 type InsertLogEntryParams struct {
-	StreamID []byte
+	StreamID sql.RawBytes
 	Date     int64
 	Level    string
 	Message  string
@@ -68,7 +70,7 @@ type InsertLogStreamParams struct {
 	NetWhitelist []byte
 }
 
-func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams) ([]byte, error) {
+func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams) (sql.RawBytes, error) {
 	row := q.db.QueryRowContext(ctx, insertLogStream,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -76,7 +78,50 @@ func (q *Queries) InsertLogStream(ctx context.Context, arg InsertLogStreamParams
 		arg.Token,
 		arg.NetWhitelist,
 	)
-	var id []byte
+	var id sql.RawBytes
 	err := row.Scan(&id)
 	return id, err
+}
+
+const queryLogs = `-- name: QueryLogs :many
+select id, stream_id, date, level, message, meta from log_entries
+where (?3 is null or stream_id = ?3)
+order by date
+limit ? offset ?
+`
+
+type QueryLogsParams struct {
+	StreamID interface{}
+	Limit    int64
+	Offset   int64
+}
+
+func (q *Queries) QueryLogs(ctx context.Context, arg QueryLogsParams) ([]LogEntry, error) {
+	rows, err := q.db.QueryContext(ctx, queryLogs, arg.StreamID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LogEntry
+	for rows.Next() {
+		var i LogEntry
+		if err := rows.Scan(
+			&i.ID,
+			&i.StreamID,
+			&i.Date,
+			&i.Level,
+			&i.Message,
+			&i.Meta,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -7,3 +7,8 @@ sql:
       go:
         package: "generated"
         out: "storage/sqlite/generated"
+        overrides:
+          - db_type: "blob"
+            go_type:
+              import: "database/sql"
+              type: "RawBytes"

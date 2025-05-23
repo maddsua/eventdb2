@@ -4,9 +4,13 @@
 
 package generated
 
+import (
+	"database/sql"
+)
+
 type LogEntry struct {
 	ID       int64
-	StreamID []byte
+	StreamID sql.RawBytes
 	Date     int64
 	Level    string
 	Message  string
@@ -14,7 +18,7 @@ type LogEntry struct {
 }
 
 type LogStream struct {
-	ID           []byte
+	ID           sql.RawBytes
 	CreatedAt    int64
 	UpdatedAt    int64
 	Name         string

@@ -27,3 +27,9 @@ insert into log_entries (
 	sqlc.arg(message),
 	sqlc.arg(meta)
 );
+
+-- name: QueryLogs :many
+select * from log_entries
+where (sqlc.narg(stream_id) is null or stream_id = sqlc.narg(stream_id))
+order by date
+limit ? offset ?;
