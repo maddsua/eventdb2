@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/maddsua/eventdb2/storage/model"
 	"github.com/maddsua/eventdb2/storage/sqlite/types"
 )
 
 func TestLabels(t *testing.T) {
 
-	labels := types.StringMap{
+	labels := model.StringMap{
 		"user_id": "12345",
 		"sus":     "true",
 		"0":       "1",
@@ -21,7 +22,7 @@ func TestLabels(t *testing.T) {
 		t.Fatalf("encoding failed: %v", err)
 	}
 
-	decoded, err := types.DecodeStringMap(data)
+	decoded, err := types.DecodeStringMap(types.NullBlobSlice(data))
 	if err != nil {
 		t.Fatalf("decoding failed: %v", err)
 	}

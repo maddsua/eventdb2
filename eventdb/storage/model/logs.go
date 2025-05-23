@@ -29,8 +29,10 @@ type LogEntry struct {
 	Date     time.Time
 	Level    LogLevel
 	Message  string
-	Meta     map[string]string
+	Meta     StringMap
 }
+
+type StringMap map[string]string
 
 type LogLevel string
 
@@ -50,12 +52,11 @@ type LogFilter struct {
 
 type LogLabelFilter struct {
 	Key         string
-	Regex       *string
 	Equal       *string
 	NotEqual    *string
 	Contains    *string
 	NotContains *string
-	IsEmpty     *string
+	IsEmpty     *bool
 }
 
 type LogStream struct {

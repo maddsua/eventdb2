@@ -6,11 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/maddsua/eventdb2/storage/model"
 	"github.com/maddsua/eventdb2/storage/sqlite/generated"
 	"github.com/maddsua/eventdb2/storage/sqlite/types"
@@ -129,7 +132,38 @@ func (this *sqlite) QueryLogs(ctx context.Context, filter model.LogFilter, page 
 
 	var result []model.LogEntry
 	for _, entry := range entries {
-		//	todo: do filtering and return
+
+		streamID, err := uuid.FromBytes(entry.StreamID)
+		if err != nil {
+			slog.Error("storage.sqlite.QueryLogs: uuid.FromBytes: StreamID",
+				slog.String("err", err.Error()))
+			continue
+		}
+
+		metadata, err := types.DecodeStringMap(entry.Meta)
+		if err != nil {
+			slog.Warn("storage.sqlite.QueryLogs: types.DecodeStringMap",
+				slog.String("err", err.Error()))
+		}
+
+		if filter.LogLevel.Valid && !strings.EqualFold(entry.Level, string(filter.LogLevel.V)) {
+			continue
+		}
+
+		for _, filter := range filter.Labels {
+			if !Matchlabels(metadata, &filter) {
+				continue
+			}
+		}
+
+		result = append(result, model.LogEntry{
+			ID:       entry.ID,
+			Date:     time.Unix(0, entry.Date),
+			StreamID: streamID,
+			Level:    model.LogLevel(entry.Level),
+			Message:  entry.Message,
+			Meta:     metadata,
+		})
 	}
 
 	return result, nil

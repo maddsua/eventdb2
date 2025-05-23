@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/maddsua/eventdb2/storage/model"
 )
 
 type Blob sql.RawBytes
@@ -48,9 +49,7 @@ func NullUUID(val uuid.NullUUID) NullBlob {
 	return NullBlob{V: val.UUID[:], Valid: true}
 }
 
-type StringMap map[string]string
-
-func EncodeStringMap(val StringMap) ([]byte, error) {
+func EncodeStringMap(val model.StringMap) (Blob, error) {
 
 	if val == nil {
 		return nil, nil
@@ -104,15 +103,15 @@ func EncodeStringMap(val StringMap) ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func DecodeStringMap(data []byte) (StringMap, error) {
+func DecodeStringMap(data NullBlob) (model.StringMap, error) {
 
-	if len(data) == 0 {
+	if !data.Valid || len(data.V) == 0 {
 		return nil, nil
 	}
 
-	val := StringMap{}
+	val := model.StringMap{}
 
-	reader := bytes.NewReader(data)
+	reader := bytes.NewReader(data.V)
 
 	for {
 
